@@ -1,25 +1,47 @@
 package main
 
 import (
-	"fmt"
+	"polyclinic-backend/db"
+	"polyclinic-backend/handlers"
+	"polyclinic-backend/middleware"
+
+	"github.com/gin-gonic/gin"
 )
 
-//TIP To run your code, right-click the code and select <b>Run</b>. Alternatively, click
-// the <icon src="AllIcons.Actions.Execute"/> icon in the gutter and select the <b>Run</b> menu item from here.
-
 func main() {
-	//TIP Press <shortcut actionId="ShowIntentionActions"/> when your caret is at the underlined or highlighted text
-	// to see how GoLand suggests fixing it.
-	s := "gopher"
-	fmt.Println("Hello and welcome, %s!", s)
+	db.Init()
 
-	for i := 1; i <= 5; i++ {
-		//TIP You can try debugging your code. We have set one <icon src="AllIcons.Debugger.Db_set_breakpoint"/> breakpoint
-		// for you, but you can always add more by pressing <shortcut actionId="ToggleLineBreakpoint"/>. To start your debugging session,
-		// right-click your code in the editor and select the <b>Debug</b> option.
-		fmt.Println("i =", 100/i)
-	}
+	r := gin.Default()
+	r.Use(middleware.Logger())
+	r.Use(middleware.Auth())
+
+	// Patients
+	r.GET("/patients", handlers.GetPatients)
+	r.GET("/patients/:id", handlers.GetPatient)
+	r.POST("/patients", handlers.CreatePatient)
+	r.PUT("/patients/:id", handlers.UpdatePatient)
+	r.DELETE("/patients/:id", handlers.DeletePatient)
+
+	// Doctors
+	r.GET("/doctors", handlers.GetDoctors)
+	r.GET("/doctors/:id", handlers.GetDoctor)
+	r.POST("/doctors", handlers.CreateDoctor)
+	r.PUT("/doctors/:id", handlers.UpdateDoctor)
+	r.DELETE("/doctors/:id", handlers.DeleteDoctor)
+
+	// Schedules
+	r.GET("/schedules", handlers.GetSchedules)
+	r.GET("/schedules/:id", handlers.GetSchedule)
+	r.POST("/schedules", handlers.CreateSchedule)
+	r.PUT("/schedules/:id", handlers.UpdateSchedule)
+	r.DELETE("/schedules/:id", handlers.DeleteSchedule)
+
+	// Visits
+	r.GET("/visits", handlers.GetVisits)
+	r.GET("/visits/:id", handlers.GetVisit)
+	r.POST("/visits", handlers.CreateVisit)
+	r.PUT("/visits/:id", handlers.UpdateVisit)
+	r.DELETE("/visits/:id", handlers.DeleteVisit)
+
+	r.Run(":8080")
 }
-
-//TIP See GoLand help at <a href="https://www.jetbrains.com/help/go/">jetbrains.com/help/go/</a>.
-// Also, you can try interactive lessons for GoLand by selecting 'Help | Learn IDE Features' from the main menu.
