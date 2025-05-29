@@ -1,11 +1,10 @@
 package main
 
 import (
+	"github.com/gin-gonic/gin"
 	"polyclinic-backend/db"
 	"polyclinic-backend/handlers"
 	"polyclinic-backend/middleware"
-
-	"github.com/gin-gonic/gin"
 )
 
 func main() {
@@ -13,35 +12,49 @@ func main() {
 
 	r := gin.Default()
 	r.Use(middleware.Logger())
-	r.Use(middleware.Auth())
 
-	// Patients
-	r.GET("/patients", handlers.GetPatients)
-	r.GET("/patients/:id", handlers.GetPatient)
-	r.POST("/patients", handlers.CreatePatient)
-	r.PUT("/patients/:id", handlers.UpdatePatient)
-	r.DELETE("/patients/:id", handlers.DeletePatient)
+	// Открытые маршруты
+	r.POST("/register", handlers.Register)
+	r.POST("/login", handlers.Login)
 
-	// Doctors
-	r.GET("/doctors", handlers.GetDoctors)
-	r.GET("/doctors/:id", handlers.GetDoctor)
-	r.POST("/doctors", handlers.CreateDoctor)
-	r.PUT("/doctors/:id", handlers.UpdateDoctor)
-	r.DELETE("/doctors/:id", handlers.DeleteDoctor)
+	// Защищённые маршруты
+	api := r.Group("/api")
+	api.Use(middleware.Auth())
+	{
+		// Patients
+		api.GET("/patients", handlers.GetPatients)
+		api.GET("/patients/:id", handlers.GetPatient)
+		api.POST("/patients", handlers.CreatePatient)
+		api.PUT("/patients/:id", handlers.UpdatePatient)
+		api.DELETE("/patients/:id", handlers.DeletePatient)
 
-	// Schedules
-	r.GET("/schedules", handlers.GetSchedules)
-	r.GET("/schedules/:id", handlers.GetSchedule)
-	r.POST("/schedules", handlers.CreateSchedule)
-	r.PUT("/schedules/:id", handlers.UpdateSchedule)
-	r.DELETE("/schedules/:id", handlers.DeleteSchedule)
+		// Doctors
+		api.GET("/doctors", handlers.GetDoctors)
+		api.GET("/doctors/:id", handlers.GetDoctor)
+		api.POST("/doctors", handlers.CreateDoctor)
+		api.PUT("/doctors/:id", handlers.UpdateDoctor)
+		api.DELETE("/doctors/:id", handlers.DeleteDoctor)
 
-	// Visits
-	r.GET("/visits", handlers.GetVisits)
-	r.GET("/visits/:id", handlers.GetVisit)
-	r.POST("/visits", handlers.CreateVisit)
-	r.PUT("/visits/:id", handlers.UpdateVisit)
-	r.DELETE("/visits/:id", handlers.DeleteVisit)
+		// Schedules
+		api.GET("/schedules", handlers.GetSchedules)
+		api.GET("/schedules/:id", handlers.GetSchedule)
+		api.POST("/schedules", handlers.CreateSchedule)
+		api.PUT("/schedules/:id", handlers.UpdateSchedule)
+		api.DELETE("/schedules/:id", handlers.DeleteSchedule)
+
+		// Visits
+		api.GET("/visits", handlers.GetVisits)
+		api.GET("/visits/:id", handlers.GetVisit)
+		api.POST("/visits", handlers.CreateVisit)
+		api.PUT("/visits/:id", handlers.UpdateVisit)
+		api.DELETE("/visits/:id", handlers.DeleteVisit)
+
+		// Sections
+		api.GET("/sections", handlers.GetSections)
+		api.GET("/sections/:id", handlers.GetSection)
+		api.POST("/sections", handlers.CreateSection)
+		api.DELETE("/sections/:id", handlers.DeleteSection)
+	}
 
 	r.Run(":8080")
 }

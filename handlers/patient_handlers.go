@@ -16,38 +16,50 @@ func CreatePatient(c *gin.Context) {
 		return
 	}
 
+	userID, exists := c.Get("user_id")
+	if !exists {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "User not authenticated"})
+		return
+	}
+
 	var input struct {
-		FullName        string `json:"full_name"`
+		FullName        string `json:"full_name" binding:"required"`
 		Address         string `json:"address"`
-		Gender          string `json:"gender"`
-		Age             int    `json:"age"`
-		InsuranceNumber string `json:"insurance_number"`
+		Gender          string `json:"gender" binding:"required"`
+		Age             int    `json:"age" binding:"required"`
+		InsuranceNumber string `json:"insurance_number" binding:"required"`
 	}
 	if err := c.ShouldBindJSON(&input); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
 
-	patient, err := factory.NewPatient(input.FullName, input.Address, input.Gender, input.Age, input.InsuranceNumber)
+	patient, err := factory.NewPatient(input.FullName, input.Address, input.Gender, input.Age, input.InsuranceNumber, userID.(uint))
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
 
-	db.DB.Create(patient)
-	c.JSON(http.StatusOK, patient)
+	if err := db.DB.Create(patient).Error; err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	db.DB.Preload("User").Find(patient)
+
+	c.JSON(http.StatusCreated, patient)
 }
 
 func GetPatients(c *gin.Context) {
 	var patients []models.Patient
-	db.DB.Find(&patients)
+	db.DB.Preload("User").Find(&patients)
 	c.JSON(http.StatusOK, patients)
 }
 
 func GetPatient(c *gin.Context) {
 	id := c.Param("id")
 	var patient models.Patient
-	if err := db.DB.First(&patient, id).Error; err != nil {
+	if err := db.DB.Preload("User").First(&patient, id).Error; err != nil {
 		c.JSON(http.StatusNotFound, gin.H{"error": "patient not found"})
 		return
 	}
@@ -61,6 +73,12 @@ func UpdatePatient(c *gin.Context) {
 		return
 	}
 
+	userID, exists := c.Get("user_id")
+	if !exists {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "User not authenticated"})
+		return
+	}
+
 	id := c.Param("id")
 	var patient models.Patient
 	if err := db.DB.First(&patient, id).Error; err != nil {
@@ -80,13 +98,23 @@ func UpdatePatient(c *gin.Context) {
 		return
 	}
 
-	updatedPatient, err := factory.NewPatient(input.FullName, input.Address, input.Gender, input.Age, input.InsuranceNumber)
+	updatedPatient, err := factory.NewPatient(
+		input.FullName,
+		input.Address,
+		input.Gender,
+		input.Age,
+		input.InsuranceNumber,
+		userID.(uint),
+	)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
 
 	db.DB.Model(&patient).Updates(updatedPatient)
+	db.DB.Model(&patient).Update("user_id", userID)
+
+	db.DB.First(&patient, id)
 	c.JSON(http.StatusOK, patient)
 }
 

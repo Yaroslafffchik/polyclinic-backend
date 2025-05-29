@@ -1,11 +1,14 @@
 package models
 
-import "gorm.io/gorm"
+import (
+	"gorm.io/gorm"
+	"time"
+)
 
 type Log struct {
 	gorm.Model
-	UserID    uint   `gorm:"not null"`
-	Action    string `gorm:"type:varchar(100)"`
-	Timestamp string `gorm:"type:timestamp;default:current_timestamp"`
-	Duration  string `gorm:"type:varchar(50)"`
+	UserID    uint      `gorm:"not null"`
+	Action    string    `gorm:"type:varchar(100)"`
+	Timestamp time.Time `gorm:"default:CURRENT_TIMESTAMP"`
+	Duration  string    `gorm:"type:varchar(50)"`
 }

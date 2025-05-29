@@ -6,7 +6,7 @@ import (
 	"regexp"
 )
 
-func NewPatient(fullName, address, gender string, age int, insuranceNumber string) (*models.Patient, error) {
+func NewPatient(fullName, address, gender string, age int, insuranceNumber string, userID uint) (*models.Patient, error) {
 	if fullName == "" {
 		return nil, errors.New("full name cannot be empty")
 	}
@@ -19,5 +19,6 @@ func NewPatient(fullName, address, gender string, age int, insuranceNumber strin
 		Gender:          gender,
 		Age:             age,
 		InsuranceNumber: insuranceNumber,
+		UserID:          userID,
 	}, nil
 }

@@ -11,4 +11,6 @@ type Doctor struct {
 	Specialization string `gorm:"type:varchar(50)"`
 	SectionID      uint
 	Section        Section
+	UserID         uint
+	User           User `gorm:"foreignKey:UserID"`
 }

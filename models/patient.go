@@ -9,4 +9,6 @@ type Patient struct {
 	Gender          string `gorm:"type:char(1)"`
 	Age             int
 	InsuranceNumber string `gorm:"type:varchar(16);unique"`
+	UserID          uint
+	User            User `gorm:"foreignKey:UserID"`
 }
