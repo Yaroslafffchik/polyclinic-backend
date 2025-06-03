@@ -1,6 +1,7 @@
 package main
 
 import (
+	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 	"polyclinic-backend/db"
 	"polyclinic-backend/handlers"
@@ -12,6 +13,16 @@ func main() {
 
 	r := gin.Default()
 	r.Use(middleware.Logger())
+
+	// Настройка CORS
+	r.Use(cors.New(cors.Config{
+		AllowOrigins:     []string{"http://localhost:3001"},                   // Разрешаем фронтенд
+		AllowMethods:     []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"}, // Добавляем OPTIONS
+		AllowHeaders:     []string{"Origin", "Content-Type", "Authorization"},
+		ExposeHeaders:    []string{"Content-Length"},
+		AllowCredentials: true,
+		MaxAge:           12 * 60 * 60, // 12 часов
+	}))
 
 	// Открытые маршруты
 	r.POST("/register", handlers.Register)
