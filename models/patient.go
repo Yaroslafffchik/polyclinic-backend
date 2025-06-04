@@ -4,11 +4,11 @@ import "gorm.io/gorm"
 
 type Patient struct {
 	gorm.Model
-	FullName        string `gorm:"type:varchar(100);not null"`
-	Address         string `gorm:"type:varchar(200)"`
-	Gender          string `gorm:"type:char(1)"`
-	Age             int
-	InsuranceNumber string `gorm:"type:varchar(16);unique"`
-	UserID          uint
-	User            User `gorm:"foreignKey:UserID"`
+	FullName        string `gorm:"type:varchar(100);not null" json:"full_name"`
+	Address         string `gorm:"type:varchar(200)" json:"address"`
+	Gender          string `gorm:"type:char(1)" json:"gender"`
+	Age             int    `json:"age"`
+	InsuranceNumber string `gorm:"type:varchar(16);unique" json:"insurance_number"`
+	UserID          uint   `json:"user_id"`
+	User            User   `gorm:"foreignKey:UserID"`
 }

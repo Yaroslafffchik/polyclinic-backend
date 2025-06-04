@@ -1,11 +1,14 @@
 package handlers
 
 import (
+	"fmt"
 	"github.com/gin-gonic/gin"
+	"log"
 	"net/http"
 	"polyclinic-backend/db"
 	"polyclinic-backend/factory"
 	"polyclinic-backend/models"
+	"time"
 )
 
 func CreateDoctor(c *gin.Context) {
@@ -34,21 +37,19 @@ func CreateDoctor(c *gin.Context) {
 		return
 	}
 
-	doctor := models.Doctor{
-		FullName:       input.FullName,
-		Category:       input.Category,
-		BirthDate:      input.BirthDate,
-		Specialization: input.Specialization,
-		Experience:     input.Experience,
-		SectionID:      input.SectionID,
-		UserID:         userID.(uint),
+	// Используем фабрику для создания врача с валидацией
+	doctor, err := factory.NewDoctor(input.FullName, input.Category, input.BirthDate, input.Specialization, input.Experience, input.SectionID, userID.(uint))
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
 	}
-	if err := db.DB.Create(&doctor).Error; err != nil {
+
+	if err := db.DB.Create(doctor).Error; err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
 
-	if err := db.DB.Preload("Section").Preload("User").First(&doctor, doctor.ID).Error; err != nil {
+	if err := db.DB.Preload("Section").Preload("User").First(doctor, doctor.ID).Error; err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to load related data: " + err.Error()})
 		return
 	}
@@ -132,6 +133,44 @@ func DeleteDoctor(c *gin.Context) {
 		return
 	}
 
-	db.DB.Delete(&doctor)
-	c.JSON(http.StatusOK, gin.H{"message": "doctor deleted"})
+	// Находим другого врача для переприсвоения
+	var replacementDoctor models.Doctor
+	if err := db.DB.Where("specialization = ? AND id != ?", doctor.Specialization, id).
+		Order("experience desc").First(&replacementDoctor).Error; err != nil {
+		// Если врача с той же специализацией нет, ищем любого доступного
+		if err := db.DB.Order("experience desc").First(&replacementDoctor).Error; err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{"error": "no available doctor for reassignment"})
+			return
+		}
+	}
+
+	// Переприсваиваем пациентов уволенного врача новому врачу
+	var patients []models.Patient
+	if err := db.DB.Where("user_id = ?", doctor.UserID).Find(&patients).Error; err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to load patients"})
+		return
+	}
+	for _, patient := range patients {
+		patient.UserID = replacementDoctor.UserID
+		if err := db.DB.Save(&patient).Error; err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "failed to reassign patient"})
+			return
+		}
+	}
+
+	// Проверяем, есть ли другие врачи в том же участке
+	var remainingDoctors []models.Doctor
+	db.DB.Where("section_id = ? AND id != ?", doctor.SectionID, id).Find(&remainingDoctors)
+	if len(remainingDoctors) == 0 {
+		// Уведомляем администратора, что участок остался без врача
+		log.Printf("Warning: Doctor ID %d was the last in Section ID %d at %s. Administrator notification required.", doctor.ID, doctor.SectionID, time.Now().Format(time.RFC3339))
+	}
+
+	// Удаляем врача
+	if err := db.DB.Delete(&doctor).Error; err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{"message": fmt.Sprintf("doctor deleted, patients reassigned to doctor ID %d", replacementDoctor.ID)})
 }

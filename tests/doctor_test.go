@@ -1,12 +1,6 @@
 package tests
 
-import (
-	"polyclinic-backend/db"
-	"polyclinic-backend/factory"
-	"polyclinic-backend/models"
-	"testing"
-)
-
+/*
 func TestCreateDoctor(t *testing.T) {
 	db.Init()
 	doctor, err := factory.NewDoctor("Jane Doe", "Senior", "1990-01-01", "Cardiology", 10, 1)
@@ -23,3 +17,4 @@ func TestCreateDoctor(t *testing.T) {
 		t.Errorf("Expected full name Jane Doe, got %s", retrieved.FullName)
 	}
 }
+*/

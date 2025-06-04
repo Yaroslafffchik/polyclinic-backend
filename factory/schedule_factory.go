@@ -1,16 +1,24 @@
 package factory
 
 import (
-	"errors"
+	"fmt"
 	"polyclinic-backend/models"
-	"strings"
 )
 
 func NewSchedule(doctorID uint, days, time, room string) (*models.Schedule, error) {
-	dayList := strings.Split(days, ",")
-	if len(dayList) > 3 {
-		return nil, errors.New("schedule cannot exceed 3 days per week")
+	if doctorID == 0 {
+		return nil, fmt.Errorf("doctor ID is required")
 	}
+	if days == "" {
+		return nil, fmt.Errorf("days are required")
+	}
+	if time == "" {
+		return nil, fmt.Errorf("time is required")
+	}
+	if room == "" {
+		return nil, fmt.Errorf("room is required")
+	}
+
 	return &models.Schedule{
 		DoctorID: doctorID,
 		Days:     days,

@@ -3,6 +3,7 @@ package handlers
 import (
 	"net/http"
 	"polyclinic-backend/db"
+	"polyclinic-backend/factory"
 	"polyclinic-backend/models"
 
 	"github.com/gin-gonic/gin"
@@ -16,15 +17,21 @@ func CreateSection(c *gin.Context) {
 	}
 
 	var input struct {
-		Name string `json:"name" binding:"required"`
+		Name    string `json:"name" binding:"required"`
+		Address string `json:"address" binding:"required"`
 	}
 	if err := c.ShouldBindJSON(&input); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
 
-	section := models.Section{Name: input.Name}
-	if err := db.DB.Create(&section).Error; err != nil {
+	section, err := factory.NewSection(input.Name, input.Address)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	if err := db.DB.Create(section).Error; err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
