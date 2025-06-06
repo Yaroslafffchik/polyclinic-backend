@@ -63,7 +63,7 @@ func Login(c *gin.Context) {
 		"role": user.Role,
 		"exp":  time.Now().Add(time.Hour * 24).Unix(),
 	})
-	tokenString, err := token.SignedString([]byte("your-secret-key")) // Замени на безопасный ключ
+	tokenString, err := token.SignedString([]byte("cool-secret-key"))
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to generate token"})
 		return
