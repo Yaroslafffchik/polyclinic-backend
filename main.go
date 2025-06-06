@@ -69,7 +69,11 @@ func main() {
 		api.POST("/sections", handlers.CreateSection)
 		api.DELETE("/sections/:id", handlers.DeleteSection)
 
-		//api.GET("/logs", handlers.GetLogs)
+		// Nurses
+		api.GET("/nurses", handlers.GetNurses)
+		api.GET("/nurses/:id", handlers.GetNurse)
+		api.POST("/nurses", handlers.CreateNurse)
+		api.DELETE("/nurses/:id", handlers.DeleteNurse)
 	}
 
 	r.Run(":8080")

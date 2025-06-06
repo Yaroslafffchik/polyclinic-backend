@@ -6,9 +6,12 @@ import (
 	"strings"
 )
 
-func NewSchedule(doctorID uint, days, time, room string) (*models.Schedule, error) {
+func NewSchedule(doctorID, sectionID uint, days, time, room string) (*models.Schedule, error) {
 	if doctorID == 0 {
 		return nil, errors.New("doctor ID must be provided")
+	}
+	if sectionID == 0 {
+		return nil, errors.New("section ID must be provided")
 	}
 	if time == "" {
 		return nil, errors.New("time cannot be empty")
@@ -32,9 +35,10 @@ func NewSchedule(doctorID uint, days, time, room string) (*models.Schedule, erro
 	}
 
 	return &models.Schedule{
-		DoctorID: doctorID,
-		Days:     days,
-		Time:     time,
-		Room:     room,
+		DoctorID:  doctorID,
+		SectionID: sectionID,
+		Days:      days,
+		Time:      time,
+		Room:      room,
 	}, nil
 }

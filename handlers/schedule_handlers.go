@@ -16,17 +16,18 @@ func CreateSchedule(c *gin.Context) {
 	}
 
 	var input struct {
-		DoctorID uint   `json:"doctor_id" binding:"required"`
-		Days     string `json:"days" binding:"required"`
-		Time     string `json:"time" binding:"required"`
-		Room     string `json:"room" binding:"required"`
+		DoctorID  uint   `json:"doctor_id" binding:"required"`
+		SectionID uint   `json:"section_id" binding:"required"`
+		Days      string `json:"days" binding:"required"`
+		Time      string `json:"time" binding:"required"`
+		Room      string `json:"room" binding:"required"`
 	}
 	if err := c.ShouldBindJSON(&input); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
 
-	schedule, err := factory.NewSchedule(input.DoctorID, input.Days, input.Time, input.Room)
+	schedule, err := factory.NewSchedule(input.DoctorID, input.SectionID, input.Days, input.Time, input.Room)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
@@ -37,6 +38,7 @@ func CreateSchedule(c *gin.Context) {
 		return
 	}
 
+	db.DB.Preload("Doctor").Preload("Section").First(schedule, schedule.ID)
 	c.JSON(http.StatusCreated, schedule)
 }
 
@@ -71,17 +73,18 @@ func UpdateSchedule(c *gin.Context) {
 	}
 
 	var input struct {
-		DoctorID uint   `json:"doctor_id"`
-		Days     string `json:"days"`
-		Time     string `json:"time"`
-		Room     string `json:"room"`
+		DoctorID  uint   `json:"doctor_id" binding:"required"`
+		SectionID uint   `json:"section_id" binding:"required"`
+		Days      string `json:"days" binding:"required"`
+		Time      string `json:"time" binding:"required"`
+		Room      string `json:"room" binding:"required"`
 	}
 	if err := c.ShouldBindJSON(&input); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
 
-	updatedSchedule, err := factory.NewSchedule(input.DoctorID, input.Days, input.Time, input.Room)
+	updatedSchedule, err := factory.NewSchedule(input.DoctorID, input.SectionID, input.Days, input.Time, input.Room)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return

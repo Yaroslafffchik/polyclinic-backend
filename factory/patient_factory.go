@@ -4,11 +4,15 @@ import (
 	"errors"
 	"polyclinic-backend/models"
 	"regexp"
+	"time"
 )
 
-func NewPatient(fullName, address, gender string, age int, insuranceNumber string, doctorID, userID uint) (*models.Patient, error) {
-	if fullName == "" {
-		return nil, errors.New("full name is required")
+func NewPatient(lastName, firstName, middleName, address, gender string, age int, insuranceNumber string, doctorID, userID uint) (*models.Patient, error) {
+	if lastName == "" {
+		return nil, errors.New("last name is required")
+	}
+	if firstName == "" {
+		return nil, errors.New("first name is required")
 	}
 	if address == "" {
 		return nil, errors.New("address is required")
@@ -27,12 +31,15 @@ func NewPatient(fullName, address, gender string, age int, insuranceNumber strin
 	}
 
 	return &models.Patient{
-		FullName:        fullName,
+		LastName:        lastName,
+		FirstName:       firstName,
+		MiddleName:      middleName,
 		Address:         address,
 		Gender:          gender,
 		Age:             age,
 		InsuranceNumber: insuranceNumber,
-		DoctorID:        doctorID,
+		CardCreatedAt:   time.Now(),
 		UserID:          userID,
+		DoctorID:        doctorID,
 	}, nil
 }

@@ -42,7 +42,20 @@ func CreateSection(c *gin.Context) {
 func GetSections(c *gin.Context) {
 	var sections []models.Section
 	db.DB.Find(&sections)
-	c.JSON(http.StatusOK, sections)
+
+	result := make([]map[string]interface{}, len(sections))
+	for i, section := range sections {
+		var nurseCount int64
+		db.DB.Model(&models.Nurse{}).Where("section_id = ?", section.ID).Count(&nurseCount)
+
+		result[i] = map[string]interface{}{
+			"ID":          section.ID,
+			"name":        section.Name,
+			"address":     section.Address,
+			"nurse_count": nurseCount,
+		}
+	}
+	c.JSON(http.StatusOK, result)
 }
 
 func GetSection(c *gin.Context) {
@@ -52,7 +65,20 @@ func GetSection(c *gin.Context) {
 		c.JSON(http.StatusNotFound, gin.H{"error": "section not found"})
 		return
 	}
-	c.JSON(http.StatusOK, section)
+
+	var doctors []models.Doctor
+	db.DB.Joins("JOIN doctor_sections ON doctors.id = doctor_sections.doctor_id").
+		Where("doctor_sections.section_id = ?", id).
+		Preload("User").Find(&doctors)
+
+	var nurses []models.Nurse
+	db.DB.Where("section_id = ?", id).Preload("User").Find(&nurses)
+
+	c.JSON(http.StatusOK, gin.H{
+		"section": section,
+		"doctors": doctors,
+		"nurses":  nurses,
+	})
 }
 
 func DeleteSection(c *gin.Context) {
