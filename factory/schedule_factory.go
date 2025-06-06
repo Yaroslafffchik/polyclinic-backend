@@ -1,22 +1,34 @@
 package factory
 
 import (
-	"fmt"
+	"errors"
 	"polyclinic-backend/models"
+	"strings"
 )
 
 func NewSchedule(doctorID uint, days, time, room string) (*models.Schedule, error) {
 	if doctorID == 0 {
-		return nil, fmt.Errorf("doctor ID is required")
-	}
-	if days == "" {
-		return nil, fmt.Errorf("days are required")
+		return nil, errors.New("doctor ID must be provided")
 	}
 	if time == "" {
-		return nil, fmt.Errorf("time is required")
+		return nil, errors.New("time cannot be empty")
 	}
 	if room == "" {
-		return nil, fmt.Errorf("room is required")
+		return nil, errors.New("room cannot be empty")
+	}
+
+	// Валидация дней недели
+	validDays := map[string]bool{
+		"Пн": true, "Вт": true, "Ср": true, "Чт": true, "Пт": true, "Сб": true, "Вс": true,
+	}
+	dayList := strings.Split(strings.ReplaceAll(days, " ", ""), ",")
+	if len(dayList) > 3 {
+		return nil, errors.New("cannot schedule more than 3 days per week")
+	}
+	for _, day := range dayList {
+		if !validDays[day] {
+			return nil, errors.New("invalid day of the week: " + day)
+		}
 	}
 
 	return &models.Schedule{

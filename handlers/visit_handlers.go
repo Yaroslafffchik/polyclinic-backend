@@ -10,15 +10,15 @@ import (
 
 func CreateVisit(c *gin.Context) {
 	role := c.GetString("role")
-	if role != "registrar" && role != "doctor" {
-		c.JSON(http.StatusForbidden, gin.H{"error": "only registrars or doctors can create visits"})
+	if role != "registrar" {
+		c.JSON(http.StatusForbidden, gin.H{"error": "only registrars can create visits"})
 		return
 	}
 
 	var input struct {
-		PatientID    uint   `json:"patient_id"`
-		DoctorID     uint   `json:"doctor_id"`
-		Date         string `json:"date"`
+		PatientID    uint   `json:"patient_id" binding:"required"`
+		DoctorID     uint   `json:"doctor_id" binding:"required"`
+		Date         string `json:"date" binding:"required"`
 		Complaints   string `json:"complaints"`
 		Diagnosis    string `json:"diagnosis"`
 		Prescription string `json:"prescription"`
@@ -35,8 +35,12 @@ func CreateVisit(c *gin.Context) {
 		return
 	}
 
-	db.DB.Create(visit)
-	c.JSON(http.StatusOK, visit)
+	if err := db.DB.Create(visit).Error; err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	c.JSON(http.StatusCreated, visit)
 }
 
 func GetVisits(c *gin.Context) {

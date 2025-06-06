@@ -16,8 +16,8 @@ func main() {
 
 	// Настройка CORS
 	r.Use(cors.New(cors.Config{
-		AllowOrigins:     []string{"http://localhost:3001"},                   // Разрешаем фронтенд
-		AllowMethods:     []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"}, // Добавляем OPTIONS
+		AllowOrigins:     []string{"http://localhost:3001"},
+		AllowMethods:     []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"},
 		AllowHeaders:     []string{"Origin", "Content-Type", "Authorization"},
 		ExposeHeaders:    []string{"Content-Length"},
 		AllowCredentials: true,
@@ -42,6 +42,8 @@ func main() {
 		// Doctors
 		api.GET("/doctors", handlers.GetDoctors)
 		api.GET("/doctors/:id", handlers.GetDoctor)
+		api.GET("/doctors/:id/patients", handlers.GetDoctorPatients)
+		api.GET("/doctors/visits/last-month", handlers.GetDoctorVisitStats)
 		api.POST("/doctors", handlers.CreateDoctor)
 		api.PUT("/doctors/:id", handlers.UpdateDoctor)
 		api.DELETE("/doctors/:id", handlers.DeleteDoctor)
@@ -49,6 +51,7 @@ func main() {
 		// Schedules
 		api.GET("/schedules", handlers.GetSchedules)
 		api.GET("/schedules/:id", handlers.GetSchedule)
+		api.GET("/schedules/specialization/:specialization", handlers.GetSchedulesBySpecialization)
 		api.POST("/schedules", handlers.CreateSchedule)
 		api.PUT("/schedules/:id", handlers.UpdateSchedule)
 		api.DELETE("/schedules/:id", handlers.DeleteSchedule)
@@ -65,6 +68,8 @@ func main() {
 		api.GET("/sections/:id", handlers.GetSection)
 		api.POST("/sections", handlers.CreateSection)
 		api.DELETE("/sections/:id", handlers.DeleteSection)
+
+		//api.GET("/logs", handlers.GetLogs)
 	}
 
 	r.Run(":8080")

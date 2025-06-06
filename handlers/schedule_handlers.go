@@ -16,10 +16,10 @@ func CreateSchedule(c *gin.Context) {
 	}
 
 	var input struct {
-		DoctorID uint   `json:"doctor_id"`
-		Days     string `json:"days"`
-		Time     string `json:"time"`
-		Room     string `json:"room"`
+		DoctorID uint   `json:"doctor_id" binding:"required"`
+		Days     string `json:"days" binding:"required"`
+		Time     string `json:"time" binding:"required"`
+		Room     string `json:"room" binding:"required"`
 	}
 	if err := c.ShouldBindJSON(&input); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
@@ -32,8 +32,12 @@ func CreateSchedule(c *gin.Context) {
 		return
 	}
 
-	db.DB.Create(schedule)
-	c.JSON(http.StatusOK, schedule)
+	if err := db.DB.Create(schedule).Error; err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	c.JSON(http.StatusCreated, schedule)
 }
 
 func GetSchedules(c *gin.Context) {

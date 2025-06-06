@@ -11,4 +11,6 @@ type Patient struct {
 	InsuranceNumber string `gorm:"type:varchar(16);unique" json:"insurance_number"`
 	UserID          uint   `json:"user_id"`
 	User            User   `gorm:"foreignKey:UserID"`
+	DoctorID        uint   `json:"doctor_id"`
+	Doctor          Doctor `gorm:"foreignKey:DoctorID"`
 }
